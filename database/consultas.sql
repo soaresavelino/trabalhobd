@@ -1,5 +1,7 @@
 -- consultas.sql
 
+-- Consulta produtos por fornecedor
+DROP FUNCTION IF EXISTS consulta_produtos_fornecedor(VARCHAR);
 CREATE OR REPLACE FUNCTION consulta_produtos_fornecedor(fornecedor_nome VARCHAR)
 RETURNS TABLE(
     nome_produto VARCHAR,
@@ -22,6 +24,7 @@ END;
 $$;
 
 -- Consulta produtos por categoria
+DROP FUNCTION IF EXISTS consulta_produtos_categoria(VARCHAR);
 CREATE OR REPLACE FUNCTION consulta_produtos_categoria(categoria_nome VARCHAR)
 RETURNS TABLE(
     nome_produto VARCHAR,
@@ -44,6 +47,7 @@ END;
 $$;
 
 -- Consulta produtos com estoque baixo
+DROP FUNCTION IF EXISTS consulta_estoque_baixo(INT);
 CREATE OR REPLACE FUNCTION consulta_estoque_baixo(limite INT)
 RETURNS TABLE(
     nome_produto VARCHAR,
@@ -65,6 +69,7 @@ END;
 $$;
 
 -- Consulta todos os produtos
+DROP FUNCTION IF EXISTS consulta_todos_produtos();
 CREATE OR REPLACE FUNCTION consulta_todos_produtos()
 RETURNS TABLE(
     nome_produto VARCHAR,
@@ -85,7 +90,8 @@ BEGIN
 END;
 $$;
 
--- consultas.sql ou no psql
+-- Consulta histórico de ações
+DROP FUNCTION IF EXISTS consulta_historico_acoes();
 CREATE OR REPLACE FUNCTION consulta_historico_acoes()
 RETURNS TABLE(
     id INT,
@@ -108,7 +114,8 @@ BEGIN
 END;
 $$;
 
-
+-- Deletar produto e registrar no histórico
+DROP FUNCTION IF EXISTS deletar_produto_e_registrar(INT, VARCHAR);
 CREATE OR REPLACE FUNCTION deletar_produto_e_registrar(id_produto INT, usuario_nickname VARCHAR)
 RETURNS VOID
 LANGUAGE plpgsql
@@ -117,25 +124,23 @@ DECLARE
     nome_produto VARCHAR;
     id_usuario INT;
 BEGIN
-    -- Pega o nome do produto
     SELECT p.nome_produto INTO nome_produto
     FROM produtos p
     WHERE p.id = id_produto;
 
-    -- Pega o ID do usuário que está deletando
     SELECT u.id INTO id_usuario
     FROM usuarios u
     WHERE u.nickname = usuario_nickname;
 
-    -- Deleta o produto
     DELETE FROM produtos WHERE id = id_produto;
 
-    -- Registra no histórico
     INSERT INTO historico_acoes(entidade, id_entidade, acao, id_usuario, descricao)
     VALUES('produto', id_produto, 'excluir', id_usuario, 'Produto "' || nome_produto || '" excluído.');
 END;
 $$;
--- buscar produto
+
+-- Consulta produto por ID
+DROP FUNCTION IF EXISTS consulta_produto_por_id(INT);
 CREATE OR REPLACE FUNCTION consulta_produto_por_id(id_produto INT)
 RETURNS TABLE(
     id INT,
@@ -156,7 +161,9 @@ BEGIN
     WHERE p.id = id_produto;
 END;
 $$;
--- Atualiza produto
+
+-- Atualizar produto
+DROP FUNCTION IF EXISTS atualizar_produto(INT, VARCHAR, VARCHAR, NUMERIC, INT, DATE, INT, INT);
 CREATE OR REPLACE FUNCTION atualizar_produto(
     id_produto INT,
     novo_nome VARCHAR,
@@ -183,7 +190,8 @@ BEGIN
 END;
 $$;
 
-DROP FUNCTION existe_produto(character varying);
+-- Existe produto
+DROP FUNCTION IF EXISTS existe_produto(VARCHAR);
 CREATE OR REPLACE FUNCTION existe_produto(nome_produto VARCHAR)
 RETURNS BOOLEAN
 LANGUAGE plpgsql
@@ -199,7 +207,8 @@ BEGIN
 END;
 $$;
 
--- Consulta para listar todos os fornecedores
+-- Consulta todos os fornecedores
+DROP FUNCTION IF EXISTS consulta_todos_fornecedores();
 CREATE OR REPLACE FUNCTION consulta_todos_fornecedores()
 RETURNS TABLE(
     id INT,
